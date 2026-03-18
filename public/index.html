@@ -236,6 +236,7 @@
           </div>
         </div>
         <div id="tg-message"></div>
+        <button class="btn btn-sm" onclick="testTelegram()" style="margin-top:8px">Send Test Card</button>
       </div>
 
       <div class="settings-section">
@@ -551,6 +552,17 @@
     await fetch("/api/settings/telegram", { method:"DELETE" });
     document.getElementById("tg-message").innerHTML = '<div class="success">Telegram bot removed.</div>';
     loadTelegramStatus();
+  }
+
+  async function testTelegram() {
+    const msgEl = document.getElementById("tg-message");
+    const res = await fetch("/api/settings/telegram/test", { method:"POST" });
+    const data = await res.json();
+    if (data.ok) {
+      msgEl.innerHTML = `<div class="success">Test card sent for "${esc(data.word)}" — check your Telegram!</div>`;
+    } else {
+      msgEl.innerHTML = `<div class="error">${esc(data.error)}</div>`;
+    }
   }
 
   // ─── Stats ─────────────────────────────────────────────

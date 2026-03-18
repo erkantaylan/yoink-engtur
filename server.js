@@ -111,6 +111,29 @@ app.delete("/api/settings/telegram", auth, async (req, res) => {
   res.json({ ok: true });
 });
 
+app.post("/api/settings/telegram/test", auth, async (req, res) => {
+  const user = await db.getUserById(req.session.userId);
+  if (!user.telegram_bot_token || !user.telegram_chat_id) {
+    return res.status(400).json({ error: "Telegram not fully linked. Make sure you pressed Start in your bot." });
+  }
+
+  const bot = telegram.getBot(req.session.userId);
+  if (!bot) return res.status(400).json({ error: "Bot not running" });
+
+  try {
+    // Try to send a due word, otherwise pick any word
+    let words = await db.getDueWords(req.session.userId, 1);
+    if (!words.length) words = await db.getWords(req.session.userId);
+    if (!words.length) return res.status(400).json({ error: "No words saved yet. Search for some words first." });
+
+    await telegram.sendFlashcard(bot, user.telegram_chat_id, words[0]);
+    res.json({ ok: true, word: words[0].term });
+  } catch (err) {
+    console.error("Telegram test error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/api/settings/telegram/status", auth, async (req, res) => {
   const user = await db.getUserById(req.session.userId);
   res.json({

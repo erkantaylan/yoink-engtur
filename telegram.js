@@ -121,14 +121,21 @@ async function startBot(userId, botToken) {
     }
   });
 
+  // Validate the token first
   try {
-    await bot.launch({ dropPendingUpdates: true });
-    activeBots.set(userId, bot);
-    console.log(`Telegram bot started for user ${userId}`);
+    await bot.telegram.getMe();
   } catch (err) {
-    console.error(`Failed to start Telegram bot for user ${userId}:`, err.message);
-    throw err;
+    throw new Error(`Invalid bot token: ${err.message}`);
   }
+
+  // launch() starts long-polling and never resolves — don't await it
+  bot.launch({ dropPendingUpdates: true }).catch((err) => {
+    console.error(`Telegram bot crashed for user ${userId}:`, err.message);
+    activeBots.delete(userId);
+  });
+
+  activeBots.set(userId, bot);
+  console.log(`Telegram bot started for user ${userId}`);
 }
 
 async function sendFlashcard(bot, chatId, word) {
