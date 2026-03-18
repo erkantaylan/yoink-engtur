@@ -1,4 +1,14 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: yoink
+      POSTGRES_USER: yoink
+      POSTGRES_PASSWORD: yoink
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     restart: unless-stopped
@@ -12,9 +22,13 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - DATABASE_URL=postgres://yoink:yoink@postgres:5432/yoink
+      - SESSION_SECRET=change-me-in-production
       - FLARESOLVERR_URL=http://flaresolverr:8191
       - TURENG_AC_BASE=https://ac.tureng.co
-    volumes:
-      - ./data:/app/data
     depends_on:
+      - postgres
       - flaresolverr
+
+volumes:
+  pgdata:
