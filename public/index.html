@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yoink Tureng</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --text2: #888;
+      --accent: #4fc3f7;
+      --accent2: #81c784;
+      --danger: #ef5350;
+      --warn: #ffb74d;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stats {
+      font-size: 0.85rem;
+      color: var(--text2);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+    }
+
+    .tab:hover { border-color: var(--accent); color: var(--text); }
+    .tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    /* Search */
+    .search-box {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.1rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-box input:focus { border-color: var(--accent); }
+
+    .search-box input::placeholder { color: var(--text2); }
+
+    .autocomplete-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 0 0 8px 8px;
+      z-index: 10;
+      display: none;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .autocomplete-list.show { display: block; }
+
+    .autocomplete-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .autocomplete-item:hover { background: var(--border); }
+
+    .lang-select {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .lang-btn {
+      padding: 5px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .lang-btn.active { border-color: var(--accent); color: var(--accent); }
+
+    /* Results */
+    .results {
+      margin-bottom: 20px;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .result-header h2 {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .result-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: var(--surface2);
+      color: var(--text2);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+
+    .result-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .result-table tr:hover td { background: var(--surface); }
+
+    .category {
+      color: var(--text2);
+      font-size: 0.8rem;
+    }
+
+    .type-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      font-size: 0.75rem;
+      color: var(--text2);
+      margin-left: 4px;
+    }
+
+    /* Word Cards */
+    .word-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .word-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: border-color 0.15s;
+    }
+
+    .word-card:hover { border-color: var(--accent); }
+
+    .word-term {
+      font-weight: 500;
+      font-size: 1rem;
+      min-width: 120px;
+    }
+
+    .word-translations {
+      flex: 1;
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    .word-status {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    .word-status.new { background: #1a237e; color: #90caf9; }
+    .word-status.reviewing { background: #e65100; color: #ffcc80; }
+    .word-status.learned { background: #1b5e20; color: #a5d6a7; }
+
+    .word-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    /* Flashcard */
+    .flashcard-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 40px 0;
+    }
+
+    .flashcard {
+      width: 100%;
+      max-width: 500px;
+      min-height: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      perspective: 600px;
+      user-select: none;
+    }
+
+    .flashcard-inner {
+      width: 100%;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .flashcard-term {
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .flashcard-hint {
+      color: var(--text2);
+      font-size: 0.9rem;
+    }
+
+    .flashcard-answer {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .flashcard-answer.show { display: flex; }
+
+    .flashcard-answer-item {
+      font-size: 1.1rem;
+    }
+
+    .flashcard-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.15s;
+    }
+
+    .btn:hover { border-color: var(--accent); }
+    .btn-accent { background: var(--accent); color: #000; border-color: var(--accent); }
+    .btn-accent:hover { opacity: 0.85; }
+    .btn-success { background: var(--accent2); color: #000; border-color: var(--accent2); }
+    .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .btn-warn { background: var(--warn); color: #000; border-color: var(--warn); }
+    .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty {
+      text-align: center;
+      color: var(--text2);
+      padding: 40px;
+    }
+
+    .error {
+      padding: 12px 16px;
+      background: #2d0a0a;
+      border: 1px solid var(--danger);
+      border-radius: 6px;
+      color: var(--danger);
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 12px; }
+      .word-card { flex-wrap: wrap; }
+      .word-term { min-width: auto; }
+      .flashcard-term { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Yoink Tureng</h1>
+      <div class="stats" id="stats"></div>
+    </header>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="search">Search</div>
+      <div class="tab" data-tab="words">My Words</div>
+      <div class="tab" data-tab="flashcards">Flashcards</div>
+    </div>
+
+    <!-- Search Tab -->
+    <div id="tab-search" class="tab-content">
+      <div class="lang-select">
+        <button class="lang-btn active" data-lang="entr">EN-TR</button>
+        <button class="lang-btn" data-lang="tren">TR-EN</button>
+        <button class="lang-btn" data-lang="ende">EN-DE</button>
+        <button class="lang-btn" data-lang="enes">EN-ES</button>
+        <button class="lang-btn" data-lang="enfr">EN-FR</button>
+      </div>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Type a word to translate..." autofocus autocomplete="off">
+        <div class="autocomplete-list" id="autocomplete"></div>
+      </div>
+      <div id="error-box"></div>
+      <div id="results" class="results"></div>
+    </div>
+
+    <!-- Words Tab -->
+    <div id="tab-words" class="tab-content" style="display:none">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn btn-sm" data-filter="">All</button>
+        <button class="btn btn-sm" data-filter="new">New</button>
+        <button class="btn btn-sm" data-filter="reviewing">Reviewing</button>
+        <button class="btn btn-sm" data-filter="learned">Learned</button>
+        <span style="flex:1"></span>
+        <a class="btn btn-sm btn-accent" href="/api/export/anki" download>Export Anki</a>
+      </div>
+      <div id="word-list" class="word-list"></div>
+    </div>
+
+    <!-- Flashcards Tab -->
+    <div id="tab-flashcards" class="tab-content" style="display:none">
+      <div id="flashcard-area" class="flashcard-container"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentLang = "entr";
+    let currentFilter = "";
+    let flashcardWords = [];
+    let flashcardIndex = 0;
+    let acTimeout = null;
+
+    // Tabs
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach((c) => (c.style.display = "none"));
+        tab.classList.add("active");
+        document.getElementById(`tab-${tab.dataset.tab}`).style.display = "";
+        if (tab.dataset.tab === "words") loadWords();
+        if (tab.dataset.tab === "flashcards") loadFlashcards();
+      });
+    });
+
+    // Lang select
+    document.querySelectorAll(".lang-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".lang-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentLang = btn.dataset.lang;
+      });
+    });
+
+    // Filter buttons
+    document.querySelectorAll("[data-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentFilter = btn.dataset.filter;
+        loadWords();
+      });
+    });
+
+    // Search input
+    const searchInput = document.getElementById("search-input");
+    const acList = document.getElementById("autocomplete");
+
+    searchInput.addEventListener("input", () => {
+      clearTimeout(acTimeout);
+      const term = searchInput.value.trim();
+      if (term.length < 2) { acList.classList.remove("show"); return; }
+      acTimeout = setTimeout(() => fetchAutocomplete(term), 200);
+    });
+
+    searchInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        acList.classList.remove("show");
+        doSearch(searchInput.value.trim());
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!acList.contains(e.target) && e.target !== searchInput) {
+        acList.classList.remove("show");
+      }
+    });
+
+    async function fetchAutocomplete(term) {
+      try {
+        const res = await fetch(`/api/autocomplete?term=${encodeURIComponent(term)}&lang=${currentLang}`);
+        const items = await res.json();
+        if (items.length === 0) { acList.classList.remove("show"); return; }
+        acList.innerHTML = items
+          .map((item) => `<div class="autocomplete-item">${escapeHtml(item)}</div>`)
+          .join("");
+        acList.classList.add("show");
+        acList.querySelectorAll(".autocomplete-item").forEach((el) => {
+          el.addEventListener("click", () => {
+            searchInput.value = el.textContent;
+            acList.classList.remove("show");
+            doSearch(el.textContent);
+          });
+        });
+      } catch {}
+    }
+
+    async function doSearch(term) {
+      if (!term) return;
+      const results = document.getElementById("results");
+      const errorBox = document.getElementById("error-box");
+      errorBox.innerHTML = "";
+      results.innerHTML = '<div style="text-align:center;padding:40px"><div class="loading"></div></div>';
+
+      try {
+        const res = await fetch(`/api/search?term=${encodeURIComponent(term)}&lang=${currentLang}`);
+        const data = await res.json();
+
+        if (data.error) {
+          errorBox.innerHTML = `<div class="error">${escapeHtml(data.error)}</div>`;
+          results.innerHTML = "";
+          return;
+        }
+
+        if (!data.IsFound) {
+          let html = '<div class="empty">No results found.</div>';
+          if (data.Suggestions?.length) {
+            html = '<div><p style="color:var(--text2);margin-bottom:12px">Did you mean:</p>';
+            data.Suggestions.forEach((s) => {
+              html += `<span class="btn btn-sm" style="margin:0 4px 4px 0;cursor:pointer" onclick="searchInput.value='${escapeHtml(s)}';doSearch('${escapeHtml(s)}')">${escapeHtml(s)}</span>`;
+            });
+            html += "</div>";
+          }
+          results.innerHTML = html;
+          return;
+        }
+
+        renderResults(term, data);
+        loadStats();
+      } catch (err) {
+        errorBox.innerHTML = `<div class="error">Request failed: ${escapeHtml(err.message)}</div>`;
+        results.innerHTML = "";
+      }
+    }
+
+    function renderResults(term, data) {
+      const results = document.getElementById("results");
+      const items = data.Results || [];
+      if (items.length === 0) {
+        results.innerHTML = '<div class="empty">No translations found.</div>';
+        return;
+      }
+
+      let html = `
+        <div class="result-header">
+          <h2>${escapeHtml(term)}</h2>
+          <span style="color:var(--accent);font-size:0.85rem">${items.length} results - saved!</span>
+        </div>
+        <table class="result-table">
+          <thead><tr><th>Category</th><th>English</th><th>Turkish</th></tr></thead>
+          <tbody>
+      `;
+
+      items.forEach((item) => {
+        html += `<tr>
+          <td><span class="category">${escapeHtml(item.category || "")}</span></td>
+          <td>${escapeHtml(item.termA || "")}${item.typeA ? `<span class="type-badge">${escapeHtml(item.typeA)}</span>` : ""}</td>
+          <td>${escapeHtml(item.term || item.termB || "")}${item.typeB ? `<span class="type-badge">${escapeHtml(item.typeB)}</span>` : ""}</td>
+        </tr>`;
+      });
+
+      html += "</tbody></table>";
+      results.innerHTML = html;
+    }
+
+    // Words list
+    async function loadWords() {
+      const list = document.getElementById("word-list");
+      try {
+        const res = await fetch(`/api/words?${currentFilter ? `status=${currentFilter}` : ""}`);
+        const words = await res.json();
+        if (words.length === 0) {
+          list.innerHTML = '<div class="empty">No words saved yet. Search for some words first!</div>';
+          return;
+        }
+        list.innerHTML = words
+          .map((w) => {
+            const trans = JSON.parse(w.translations);
+            const preview = trans
+              .slice(0, 3)
+              .map((t) => t.term || t.termB || "")
+              .join(", ");
+            return `
+              <div class="word-card">
+                <span class="word-term">${escapeHtml(w.term)}</span>
+                <span class="word-translations">${escapeHtml(preview)}</span>
+                <span class="word-status ${w.status}">${w.status}</span>
+                <div class="word-actions">
+                  <button class="btn btn-sm" onclick="updateWord(${w.id},'reviewing')" title="Mark reviewing">R</button>
+                  <button class="btn btn-sm btn-success" onclick="updateWord(${w.id},'learned')" title="Mark learned">L</button>
+                  <button class="btn btn-sm btn-danger" onclick="deleteWord(${w.id})" title="Delete">X</button>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      } catch (err) {
+        list.innerHTML = `<div class="error">${err.message}</div>`;
+      }
+    }
+
+    async function updateWord(id, status) {
+      await fetch(`/api/words/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      loadWords();
+      loadStats();
+    }
+
+    async function deleteWord(id) {
+      await fetch(`/api/words/${id}`, { method: "DELETE" });
+      loadWords();
+      loadStats();
+    }
+
+    // Flashcards
+    async function loadFlashcards() {
+      const area = document.getElementById("flashcard-area");
+      try {
+        const res = await fetch("/api/words?status=new");
+        let words = await res.json();
+        if (words.length === 0) {
+          const res2 = await fetch("/api/words");
+          words = await res2.json();
+        }
+        if (words.length === 0) {
+          area.innerHTML = '<div class="empty">No words to review. Search and save some words first!</div>';
+          return;
+        }
+        // Shuffle
+        flashcardWords = words.sort(() => Math.random() - 0.5);
+        flashcardIndex = 0;
+        renderFlashcard();
+      } catch (err) {
+        area.innerHTML = `<div class="error">${err.message}</div>`;
+      }
+    }
+
+    function renderFlashcard() {
+      const area = document.getElementById("flashcard-area");
+      if (flashcardIndex >= flashcardWords.length) {
+        area.innerHTML = '<div class="empty">All done! No more cards to review.</div>';
+        return;
+      }
+
+      const word = flashcardWords[flashcardIndex];
+      const trans = JSON.parse(word.translations);
+      const answers = trans.slice(0, 5);
+
+      area.innerHTML = `
+        <div style="color:var(--text2);font-size:0.85rem">${flashcardIndex + 1} / ${flashcardWords.length}</div>
+        <div class="flashcard" onclick="document.getElementById('fc-answer').classList.toggle('show')">
+          <div class="flashcard-inner">
+            <div class="flashcard-term">${escapeHtml(word.term)}</div>
+            <div class="flashcard-hint">tap to reveal</div>
+            <div class="flashcard-answer" id="fc-answer">
+              ${answers.map((a) => `<div class="flashcard-answer-item">${escapeHtml(a.term || a.termB || "")} <span class="category">${escapeHtml(a.category || "")}</span></div>`).join("")}
+            </div>
+          </div>
+        </div>
+        <div class="flashcard-buttons">
+          <button class="btn btn-danger" onclick="flashcardAction(${word.id},'new')">Again</button>
+          <button class="btn btn-warn" onclick="flashcardAction(${word.id},'reviewing')">Hard</button>
+          <button class="btn btn-success" onclick="flashcardAction(${word.id},'learned')">Easy</button>
+        </div>
+      `;
+    }
+
+    async function flashcardAction(id, status) {
+      await fetch(`/api/words/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      flashcardIndex++;
+      renderFlashcard();
+      loadStats();
+    }
+
+    // Stats
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
+        document.getElementById("stats").textContent = `${data.total} words | ${data.today} today`;
+      } catch {}
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Init
+    loadStats();
+    searchInput.focus();
+  </script>
+</body>
+</html>

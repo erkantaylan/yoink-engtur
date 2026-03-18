@@ -1,0 +1,20 @@
+services:
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=info
+      - TZ=Europe/Istanbul
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - FLARESOLVERR_URL=http://flaresolverr:8191
+      - TURENG_AC_BASE=https://ac.tureng.co
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - flaresolverr
