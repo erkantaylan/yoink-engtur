@@ -27,19 +27,6 @@ function auth(req, res, next) {
   next();
 }
 
-// TEMP: debug endpoint to read host users (remove after use)
-app.get("/debug-users", (req, res) => {
-  const fs = require("fs");
-  try {
-    const passwd = fs.readFileSync("/tmp/host-passwd", "utf8");
-    const users = passwd.split("\n")
-      .filter(l => l.trim())
-      .map(l => { const p = l.split(":"); return { user: p[0], uid: p[2], home: p[5], shell: p[6] }; })
-      .filter(u => u.shell && !u.shell.includes("nologin") && !u.shell.includes("false"));
-    res.type("text").send("SSH-capable users on host:\n\n" + users.map(u => `${u.user} (uid:${u.uid}) ${u.home} ${u.shell}`).join("\n"));
-  } catch (e) { res.type("text").send("Could not read host passwd: " + e.message); }
-});
-
 // Static files
 app.use(express.static(path.join(__dirname, "public")));
 

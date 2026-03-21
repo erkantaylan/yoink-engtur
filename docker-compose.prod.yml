@@ -26,8 +26,6 @@ services:
     restart: unless-stopped
     expose:
       - "3000"
-    volumes:
-      - /etc/passwd:/tmp/host-passwd:ro
     environment:
       - DATABASE_URL=postgres://yoink:yoink@postgres:5432/yoink
       - SESSION_SECRET=${SESSION_SECRET:-change-me-in-production}
